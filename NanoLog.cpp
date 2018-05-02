@@ -1,27 +1,8 @@
-/*
-
-Distributed under the MIT License (MIT)
-
-    Copyright (c) 2016 Karthik Iyengar
-
-Permission is hereby granted, free of charge, to any person obtaining a copy of 
-this software and associated documentation files (the "Software"), to deal in the 
-Software without restriction, including without limitation the rights to 
-use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies 
-of the Software, and to permit persons to whom the Software is furnished 
-to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included 
-in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, 
-INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, 
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS 
-OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER 
-IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, 
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-*/
+//
+// Distributed under the MIT License (MIT)
+//    Copyright (c) 2016 Karthik Iyengar
+//    Copyright (c) 2018 Alain Lanthier
+//
 
 #include "NanoLog.hpp"
 #include <cstring>
@@ -32,11 +13,7 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <atomic>
 #include <queue>
 #include <fstream>
-
-#include <sstream> // stringstream
 #include <iomanip> // put_time
-#include <string>  // string
-
 
 namespace
 {
@@ -87,12 +64,9 @@ namespace nanolog
     {
 	    switch (loglevel)
 	    {
-	        case LogLevel::INFO:
-	            return "INFO";
-	        case LogLevel::WARN:
-	            return "WARN";
-	        case LogLevel::CRIT:
-	            return "CRIT";
+	        case LogLevel::INFO: return "INFO";
+	        case LogLevel::WARN: return "WARN";
+	        case LogLevel::CRIT: return "CRIT";
 	    }
 	    return "XXXX";
     }
@@ -112,16 +86,16 @@ namespace nanolog
 	    encode < Arg >(arg);
     }
 
-    NanoLogLine::NanoLogLine(LogLevel level, char const * file, char const * function, uint32_t line)
-	    : m_bytes_used(0)
-	    , m_buffer_size(sizeof(m_stack_buffer))
+    NanoLogLine::NanoLogLine(LogLevel level, char const *file,
+                             char const *function, uint32_t line)
+        : m_bytes_used(0), m_buffer_size(sizeof(m_stack_buffer)) 
     {
-	    encode < uint64_t >(timestamp_now());
-	    encode < std::thread::id >(this_thread_id());
-	    encode < string_literal_t >(string_literal_t(file));
-	    encode < string_literal_t >(string_literal_t(function));
-	    encode < uint32_t >(line);
-	    encode < LogLevel >(level);
+      encode<uint64_t>(timestamp_now());
+      encode<std::thread::id>(this_thread_id());
+      encode<string_literal_t>(string_literal_t(file));
+      encode<string_literal_t>(string_literal_t(function));
+      encode<uint32_t>(line);
+      encode<LogLevel>(level);
     }
 
     NanoLogLine::~NanoLogLine() = default;
@@ -144,9 +118,7 @@ namespace nanolog
 	       << '[' << file.m_s << ':' << function.m_s << ':' << line << "] ";
 
 	    stringify(os, b, end);
-
 	    os << std::endl;
-
 	    if (loglevel >= LogLevel::CRIT)
 	        os.flush();
     }
@@ -184,7 +156,6 @@ namespace nanolog
 	        return;
 
 	    int type_id = static_cast < int >(*start); start++;
-	
 	    switch (type_id)
 	    {
 	    case 0:
@@ -323,7 +294,7 @@ namespace nanolog
 
     struct SpinLock
     {
-	    SpinLock(std::atomic_flag & flag) : m_flag(flag)
+        explicit SpinLock(std::atomic_flag & flag) : m_flag(flag)
 	    {
 	        while (m_flag.test_and_set(std::memory_order_acquire));
 	    }
@@ -343,10 +314,10 @@ namespace nanolog
     public:
     	struct alignas(64) Item
     	{
-	        Item() 
-		    : flag{ ATOMIC_FLAG_INIT }
-		    , written(0)
-		    , logline(LogLevel::INFO, nullptr, nullptr, 0)
+	        explicit Item() 
+		        : flag{ ATOMIC_FLAG_INIT }
+		        , written(0)
+		        , logline(LogLevel::INFO, nullptr, nullptr, 0)
 	        {
 	        }
 	    
@@ -356,7 +327,7 @@ namespace nanolog
 	        NanoLogLine logline;
     	};
 	
-    	RingBuffer(size_t const size) 
+        explicit RingBuffer(size_t const size)
     	    : m_size(size)
     	    , m_ring(static_cast<Item*>(std::malloc(size * sizeof(Item))))
     	    , m_write_index(0)
@@ -382,6 +353,7 @@ namespace nanolog
     	{
     	    unsigned int write_index = m_write_index.fetch_add(1, std::memory_order_relaxed) % m_size;
     	    Item & item = m_ring[write_index];
+
     	    SpinLock spinlock(item.flag);
 	        item.logline = std::move(logline);
 	        item.written = 1;
@@ -390,6 +362,7 @@ namespace nanolog
     	bool try_pop(NanoLogLine & logline) override
     	{
     	    Item & item = m_ring[m_read_index % m_size];
+
     	    SpinLock spinlock(item.flag);
     	    if (item.written == 1)
     	    {
@@ -408,7 +381,7 @@ namespace nanolog
     	size_t const m_size;
     	Item * m_ring;
     	std::atomic < unsigned int > m_write_index;
-	    char pad[64];
+        char pad[64] = { 0 };
     	unsigned int m_read_index;
     };
 
@@ -418,8 +391,8 @@ namespace nanolog
     public:
     	struct Item
     	{
-	        Item(NanoLogLine && nanologline) : logline(std::move(nanologline)) {}
-	        char padding[256 - sizeof(NanoLogLine)];
+            explicit Item(NanoLogLine && nanologline) : logline(std::move(nanologline)) {}
+            char padding[256 - sizeof(NanoLogLine)] = { 0 };
 	        NanoLogLine logline;
     	};
 
@@ -533,6 +506,7 @@ namespace nanolog
 	    {
 	        std::unique_ptr < Buffer > next_write_buffer(new Buffer());
 	        m_current_write_buffer.store(next_write_buffer.get(), std::memory_order_release);
+
 	        SpinLock spinlock(m_flag);
 	        m_buffers.push(std::move(next_write_buffer));
 	        m_write_index.store(0, std::memory_order_relaxed);

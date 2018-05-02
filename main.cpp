@@ -1,7 +1,11 @@
 #include "NanoLog.hpp"
 
+int main_bench();
 int main()
 {
+    main_bench();
+    system("pause");
+
   // Ensure initialize is called once prior to logging.
   // This will create log files like /tmp/nanolog1.txt, /tmp/nanolog2.txt etc.
   // Log will roll to the next file after every 1MB.
