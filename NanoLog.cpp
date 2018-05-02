@@ -33,35 +33,38 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 #include <queue>
 #include <fstream>
 
+#include <sstream> // stringstream
+#include <iomanip> // put_time
+#include <string>  // string
+
+
 namespace
 {
-
     /* Returns microseconds since epoch */
     uint64_t timestamp_now()
     {
-    	return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::high_resolution_clock::now().time_since_epoch()).count();
+      return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     }
 
     /* I want [2016-10-13 00:01:23.528514] */
     void format_timestamp(std::ostream & os, uint64_t timestamp)
     {
-	// The next 3 lines do not work on MSVC!
-	// auto duration = std::chrono::microseconds(timestamp);
-	// std::chrono::high_resolution_clock::time_point time_point(duration);
-	// std::time_t time_t = std::chrono::high_resolution_clock::to_time_t(time_point);
-	std::time_t time_t = timestamp / 1000000;
-	auto gmtime = std::gmtime(&time_t);
-	char buffer[32];
-	strftime(buffer, 32, "%Y-%m-%d %T.", gmtime);
-	char microseconds[7];
-	sprintf(microseconds, "%06llu", timestamp % 1000000);
-	os << '[' << buffer << microseconds << ']';
+      auto usecs = std::chrono::microseconds(timestamp);
+      auto secs = std::chrono::duration_cast<std::chrono::seconds> (usecs);
+      usecs -= secs;
+      std::time_t time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::time_point{ secs });
+
+      std::stringstream ss;
+      ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %X");
+      ss << "." << usecs.count();
+      std::string s = ss.str();
+      os << '[' << s << ']';
     }
 
     std::thread::id this_thread_id()
     {
-	static thread_local const std::thread::id id = std::this_thread::get_id();
-	return id;
+	    static thread_local const std::thread::id id = std::this_thread::get_id();
+	    return id;
     }
 
     template < typename T, typename Tuple >
