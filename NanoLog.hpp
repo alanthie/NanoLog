@@ -39,81 +39,81 @@ namespace nanolog
     class NanoLogLine
     {
     public:
-	NanoLogLine(LogLevel level, char const * file, char const * function, uint32_t line);
-	~NanoLogLine();
+	    NanoLogLine(LogLevel level, char const * file, char const * function, uint32_t line);
+	    ~NanoLogLine();
 
-	NanoLogLine(NanoLogLine &&) = default;
-	NanoLogLine& operator=(NanoLogLine &&) = default;
+	    NanoLogLine(NanoLogLine &&) = default;
+	    NanoLogLine& operator=(NanoLogLine &&) = default;
 
-	void stringify(std::ostream & os);
+	    void stringify(std::ostream & os);
 
-	NanoLogLine& operator<<(char arg);
-	NanoLogLine& operator<<(int32_t arg);
-	NanoLogLine& operator<<(uint32_t arg);
-	NanoLogLine& operator<<(int64_t arg);
-	NanoLogLine& operator<<(uint64_t arg);
-	NanoLogLine& operator<<(double arg);
-	NanoLogLine& operator<<(std::string const & arg);
+	    NanoLogLine& operator<<(char arg);
+	    NanoLogLine& operator<<(int32_t arg);
+	    NanoLogLine& operator<<(uint32_t arg);
+	    NanoLogLine& operator<<(int64_t arg);
+	    NanoLogLine& operator<<(uint64_t arg);
+	    NanoLogLine& operator<<(double arg);
+	    NanoLogLine& operator<<(std::string const & arg);
 
-	template < size_t N >
-	NanoLogLine& operator<<(const char (&arg)[N])
-	{
-	    encode(string_literal_t(arg));
-	    return *this;
-	}
+	    template < size_t N >
+	    NanoLogLine& operator<<(const char (&arg)[N])
+	    {
+	        encode(string_literal_t(arg));
+	        return *this;
+	    }
 
-	template < typename Arg >
-	typename std::enable_if < std::is_same < Arg, char const * >::value, NanoLogLine& >::type
-	operator<<(Arg const & arg)
-	{
-	    encode(arg);
-	    return *this;
-	}
+	    template < typename Arg >
+	    typename std::enable_if < std::is_same < Arg, char const * >::value, NanoLogLine& >::type
+	    operator<<(Arg const & arg)
+	    {
+	        encode(arg);
+	        return *this;
+	    }
 
-	template < typename Arg >
-	typename std::enable_if < std::is_same < Arg, char * >::value, NanoLogLine& >::type
-	operator<<(Arg const & arg)
-	{
-	    encode(arg);
-	    return *this;
-	}
+	    template < typename Arg >
+	    typename std::enable_if < std::is_same < Arg, char * >::value, NanoLogLine& >::type
+	    operator<<(Arg const & arg)
+	    {
+	        encode(arg);
+	        return *this;
+	    }
 
-	struct string_literal_t
-	{
-	    explicit string_literal_t(char const * s) : m_s(s) {}
-	    char const * m_s;
-	};
+	    struct string_literal_t
+	    {
+	        explicit string_literal_t(char const * s) : m_s(s) {}
+	        char const * m_s;
+	    };
 
     private:	
-	char * buffer();
+	    char * buffer();
 
-	template < typename Arg >
-	void encode(Arg arg);
+	    template < typename Arg >
+	    void encode(Arg arg);
 
-	template < typename Arg >
-	void encode(Arg arg, uint8_t type_id);
+	    template < typename Arg >
+	    void encode(Arg arg, uint8_t type_id);
 
-	void encode(char * arg);
-	void encode(char const * arg);
-	void encode(string_literal_t arg);
-	void encode_c_string(char const * arg, size_t length);
-	void resize_buffer_if_needed(size_t additional_bytes);
-	void stringify(std::ostream & os, char * start, char const * const end);
+	    void encode(char * arg);
+	    void encode(char const * arg);
+	    void encode(string_literal_t arg);
+	    void encode_c_string(char const * arg, size_t length);
+	    void resize_buffer_if_needed(size_t additional_bytes);
+	    void stringify(std::ostream & os, char * start, char const * const end);
 
     private:
-	size_t m_bytes_used;
-	size_t m_buffer_size;
-	std::unique_ptr < char [] > m_heap_buffer;
-	char m_stack_buffer[256 - 2 * sizeof(size_t) - sizeof(decltype(m_heap_buffer)) - 8 /* Reserved */];
+	    size_t m_bytes_used;
+	    size_t m_buffer_size;
+	    std::unique_ptr < char [] > m_heap_buffer;
+	    char m_stack_buffer[256 - 2 * sizeof(size_t) - sizeof(decltype(m_heap_buffer)) - 8 /* Reserved */];
     };
     
     struct NanoLog
     {
-	/*
-	 * Ideally this should have been operator+=
-	 * Could not get that to compile, so here we are...
-	 */
-	bool operator==(NanoLogLine &);
+	    /*
+	     * Ideally this should have been operator+=
+	     * Could not get that to compile, so here we are...
+	     */
+	    bool operator==(NanoLogLine &);
     };
 
     void set_log_level(LogLevel level);
@@ -131,8 +131,8 @@ namespace nanolog
      */
     struct NonGuaranteedLogger
     {
-	NonGuaranteedLogger(uint32_t ring_buffer_size_mb_) : ring_buffer_size_mb(ring_buffer_size_mb_) {}
-	uint32_t ring_buffer_size_mb;
+        NonGuaranteedLogger(uint32_t ring_buffer_size_mb_) : ring_buffer_size_mb(ring_buffer_size_mb_) {}
+	    uint32_t ring_buffer_size_mb;
     };
 
     /*
