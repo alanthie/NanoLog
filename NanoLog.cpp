@@ -40,13 +40,11 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SO
 
 namespace
 {
-    /* Returns microseconds since epoch */
     uint64_t timestamp_now()
     {
       return std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
     }
 
-    /* I want [2016-10-13 00:01:23.528514] */
     void format_timestamp(std::ostream & os, uint64_t timestamp)
     {
       auto usecs = std::chrono::microseconds(timestamp);
@@ -54,11 +52,8 @@ namespace
       usecs -= secs;
       std::time_t time_t = std::chrono::system_clock::to_time_t(std::chrono::system_clock::time_point{ secs });
 
-      std::stringstream ss;
-      ss << std::put_time(std::localtime(&time_t), "%Y-%m-%d %X");
-      ss << "." << usecs.count();
-      std::string s = ss.str();
-      os << '[' << s << ']';
+      os << '[' << std::put_time(std::localtime(&time_t), "%Y-%m-%d %X");
+      os << "." << usecs.count() << ']';
     }
 
     std::thread::id this_thread_id()
