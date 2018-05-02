@@ -3,8 +3,8 @@
 int main_bench();
 int main()
 {
-    main_bench();
-    system("pause");
+    //main_bench();
+    //system("pause");
 
   // Ensure initialize is called once prior to logging.
   // This will create log files like /tmp/nanolog1.txt, /tmp/nanolog2.txt etc.
@@ -19,9 +19,14 @@ int main()
   // In this example ring_buffer_size_mb = 3.
   // nanolog::initialize(nanolog::NonGuaranteedLogger(3), "/tmp/", "nanolog", 1);
 
+  nanolog::set_log_level(nanolog::LogLevel::DEBUG);
   for (int i = 0; i < 5; ++i)
   {
+    LOG_DEBUG << "Sample NanoLog: " << i;
     LOG_INFO << "Sample NanoLog: " << i;
+    LOG_WARN<< "Sample NanoLog: " << i;
+    LOG_INFO << "Sample NanoLog: " << i;
+    LOG_CRIT << "Sample NanoLog: " << i;
   }
 
   // Change log level at run-time.
