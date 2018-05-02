@@ -1,7 +1,7 @@
 //
 // Distributed under the MIT License (MIT)
-//    Copyright (c) 2016 Karthik Iyengar
 //    Copyright (c) 2018 Alain Lanthier
+//    Initial author 2016 Karthik Iyengar (github)
 //
 
 #ifndef NANO_LOG_HEADER_GUARD
@@ -15,7 +15,7 @@
 
 namespace nanolog
 {
-    enum class LogLevel : uint8_t { INFO, WARN, CRIT };
+    enum class LogLevel : uint8_t { DEBUG, INFO, WARN, ERROR, CRIT, NONE };
     
     class NanoLogLine
     {
@@ -139,8 +139,10 @@ namespace nanolog
 } // namespace nanolog
 
 #define NANO_LOG(LEVEL) nanolog::NanoLog() == nanolog::NanoLogLine(LEVEL, __FILE__, __func__, __LINE__)
+#define LOG_DEBUG nanolog::is_logged(nanolog::LogLevel::DEBUG) && NANO_LOG(nanolog::LogLevel::DEBUG)
 #define LOG_INFO nanolog::is_logged(nanolog::LogLevel::INFO) && NANO_LOG(nanolog::LogLevel::INFO)
 #define LOG_WARN nanolog::is_logged(nanolog::LogLevel::WARN) && NANO_LOG(nanolog::LogLevel::WARN)
+#define LOG_ERROR nanolog::is_logged(nanolog::LogLevel::ERROR) && NANO_LOG(nanolog::LogLevel::ERROR)
 #define LOG_CRIT nanolog::is_logged(nanolog::LogLevel::CRIT) && NANO_LOG(nanolog::LogLevel::CRIT)
 
 #endif /* NANO_LOG_HEADER_GUARD */

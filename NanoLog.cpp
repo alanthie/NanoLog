@@ -1,7 +1,7 @@
 //
 // Distributed under the MIT License (MIT)
-//    Copyright (c) 2016 Karthik Iyengar
 //    Copyright (c) 2018 Alain Lanthier
+//    Initial author 2016 Karthik Iyengar (github)
 //
 
 #include "NanoLog.hpp"
@@ -62,12 +62,19 @@ namespace nanolog
 
     char const * to_string(LogLevel loglevel)
     {
-	    switch (loglevel)
-	    {
-	        case LogLevel::INFO: return "INFO";
-	        case LogLevel::WARN: return "WARN";
-	        case LogLevel::CRIT: return "CRIT";
-	    }
+        switch (loglevel)
+        {
+        case LogLevel::DEBUG:
+            return "DEBUG";
+        case LogLevel::INFO:
+            return "INFO ";
+        case LogLevel::WARN:
+            return "WARN ";
+        case LogLevel::ERROR:
+            return "ERROR";
+        case LogLevel::CRIT:
+            return "CRIT ";
+        }
 	    return "XXXX";
     }
 
@@ -544,28 +551,28 @@ namespace nanolog
 	        m_bytes_written += m_os->tellp() - pos;
 	        if (m_bytes_written > m_log_file_roll_size_bytes)
 	        {
-		    roll_file();
+		        roll_file();
 	        }
 	    }
 
     private:
-	    void roll_file()
-	    {
-	        if (m_os)
-	        {
-		    m_os->flush();
-		    m_os->close();
-	        }
+      void roll_file() 
+      {
+        if (m_os) 
+        {
+          m_os->flush();
+          m_os->close();
+        }
 
-	        m_bytes_written = 0;
-	        m_os.reset(new std::ofstream());
-	        // TODO Optimize this part. Does it even matter ?
-	        std::string log_file_name = m_name;
-	        log_file_name.append(".");
-	        log_file_name.append(std::to_string(++m_file_number));
-	        log_file_name.append(".txt");
-	        m_os->open(log_file_name, std::ofstream::out | std::ofstream::trunc);
-	    }
+        m_bytes_written = 0;
+        m_os.reset(new std::ofstream());
+        // TODO Optimize this part. Does it even matter ?
+        std::string log_file_name = m_name;
+        log_file_name.append(".");
+        log_file_name.append(std::to_string(++m_file_number));
+        log_file_name.append(".txt");
+        m_os->open(log_file_name, std::ofstream::out | std::ofstream::trunc);
+	  }
 
     private:
 	    uint32_t m_file_number = 0;
@@ -665,7 +672,7 @@ namespace nanolog
 	    atomic_nanologger.store(nanologger.get(), std::memory_order_seq_cst);
     }
 
-    std::atomic < unsigned int > loglevel = {0};
+    std::atomic < unsigned int > loglevel = {1};
 
     void set_log_level(LogLevel level)
     {
