@@ -64,16 +64,11 @@ namespace nanolog
     {
         switch (loglevel)
         {
-        case LogLevel::DEBUG:
-            return "DEBUG";
-        case LogLevel::INFO:
-            return "INFO ";
-        case LogLevel::WARN:
-            return "WARN ";
-        case LogLevel::ERROR:
-            return "ERROR";
-        case LogLevel::CRIT:
-            return "CRIT ";
+            case LogLevel::DEBUG:   return "DEBUG";
+            case LogLevel::INFO:    return "INFO ";
+            case LogLevel::WARN:    return "WARN ";
+            case LogLevel::ERROR:   return "ERROR";
+            case LogLevel::CRIT:    return "CRIT ";
         }
 	    return "XXXX";
     }
@@ -93,8 +88,7 @@ namespace nanolog
 	    encode < Arg >(arg);
     }
 
-    NanoLogLine::NanoLogLine(LogLevel level, char const *file,
-                             char const *function, uint32_t line)
+    NanoLogLine::NanoLogLine(LogLevel level, char const *file, char const *function, uint32_t line)
         : m_bytes_used(0), m_buffer_size(sizeof(m_stack_buffer)) 
     {
       encode<uint64_t>(timestamp_now());
@@ -131,7 +125,7 @@ namespace nanolog
     }
 
     template < typename Arg >
-    char * decode(std::ostream & os, char * b, Arg * dummy)
+    char * decode(std::ostream & os, char * b, Arg * /*dummy*/)
     {
 	    Arg arg = *reinterpret_cast < Arg * >(b);
 	    os << arg;
@@ -139,7 +133,7 @@ namespace nanolog
     }
 
     template <>
-    char * decode(std::ostream & os, char * b, NanoLogLine::string_literal_t * dummy)
+    char * decode(std::ostream & os, char * b, NanoLogLine::string_literal_t * /*dummy*/)
     {
 	    NanoLogLine::string_literal_t s = *reinterpret_cast < NanoLogLine::string_literal_t * >(b);
 	    os << s.m_s;
@@ -147,7 +141,7 @@ namespace nanolog
     }
 
     template <>
-    char * decode(std::ostream & os, char * b, char ** dummy)
+    char * decode(std::ostream & os, char * b, char ** /*dummy*/)
     {
 	    while (*b != '\0')
 	    {
@@ -457,12 +451,11 @@ namespace nanolog
 	    QueueBuffer(QueueBuffer const &) = delete;
 	    QueueBuffer& operator=(QueueBuffer const &) = delete;
 
-	    QueueBuffer() : m_current_read_buffer{nullptr}
-				    , m_write_index(0)
-			      , m_flag{ATOMIC_FLAG_INIT}
-		          , m_read_index(0)
-	    {
-	        setup_next_write_buffer();
+            QueueBuffer()
+                : m_current_read_buffer{nullptr},
+                  m_write_index(0), m_flag{ATOMIC_FLAG_INIT}, m_read_index(0) 
+            {
+              setup_next_write_buffer();
 	    }
 
     	void push(NanoLogLine && logline) override
@@ -482,30 +475,30 @@ namespace nanolog
 	        }
     	}
 
-    	bool try_pop(NanoLogLine & logline) override
-	    {
-	        if (m_current_read_buffer == nullptr)
-		    m_current_read_buffer = get_next_read_buffer();
+        bool try_pop(NanoLogLine &logline) override 
+        {
+          if (m_current_read_buffer == nullptr)
+            m_current_read_buffer = get_next_read_buffer();
 
-	        Buffer * read_buffer = m_current_read_buffer;
+          Buffer *read_buffer = m_current_read_buffer;
 
-	        if (read_buffer == nullptr)
-		    return false;
+          if (read_buffer == nullptr)
+            return false;
 
-	        if (bool success = read_buffer->try_pop(logline, m_read_index))
-	        {
-		        m_read_index++;
-		        if (m_read_index == Buffer::size)
-		        {
-		            m_read_index = 0;
-		            m_current_read_buffer = nullptr;
-		            SpinLock spinlock(m_flag);
-		            m_buffers.pop();
-		        }
-		        return true;
-	        }
+          if (bool success = read_buffer->try_pop(logline, m_read_index)) 
+          {
+            m_read_index++;
+            if (m_read_index == Buffer::size)
+            {
+              m_read_index = 0;
+              m_current_read_buffer = nullptr;
+              SpinLock spinlock(m_flag);
+              m_buffers.pop();
+            }
+            return true;
+          }
 
-	        return false;
+          return false;
 	    }
 
     private:
@@ -594,7 +587,7 @@ namespace nanolog
 	        m_state.store(State::READY, std::memory_order_release);
 	    }
 
-	    NanoLogger(GuaranteedLogger gl, std::string const & log_directory, std::string const & log_file_name, uint32_t log_file_roll_size_mb)
+	    NanoLogger(GuaranteedLogger /*gl*/, std::string const & log_directory, std::string const & log_file_name, uint32_t log_file_roll_size_mb)
 	        : m_state(State::INIT)
 	        , m_buffer_base(new QueueBuffer())
 	        , m_file_writer(log_directory, log_file_name, std::max(1u, log_file_roll_size_mb))
