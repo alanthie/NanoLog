@@ -97,10 +97,9 @@ namespace nanolog
 	    bool operator==(NanoLogLine &);
     };
 
-    void set_log_level(LogLevel level);
-    
+    // Namespace GLOBALS
+    void set_log_level(LogLevel level);    
     bool is_logged(LogLevel level);
-
 
     /*
      * Non guaranteed logging. Uses a ring buffer to hold log lines.
@@ -123,6 +122,7 @@ namespace nanolog
     {
     };
     
+    // Namespace GLOBALS
     /*
      * Ensure initialize() is called prior to any log statements.
      * log_directory - where to create the logs. For example - "/tmp/"
@@ -138,6 +138,7 @@ namespace nanolog
 
 } // namespace nanolog
 
+  // Namespace GLOBALS
 #define NANO_LOG(LEVEL) nanolog::NanoLog() == nanolog::NanoLogLine(LEVEL, __FILE__, __func__, __LINE__)
 #define LOG_DEBUG nanolog::is_logged(nanolog::LogLevel::DEBUG) && NANO_LOG(nanolog::LogLevel::DEBUG)
 #define LOG_INFO nanolog::is_logged(nanolog::LogLevel::INFO) && NANO_LOG(nanolog::LogLevel::INFO)

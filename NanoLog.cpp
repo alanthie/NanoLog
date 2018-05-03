@@ -309,7 +309,10 @@ namespace nanolog
 	    std::atomic_flag & m_flag;
     };
 
-    /* Multi Producer Single Consumer Ring Buffer */
+    //----------------------------------------------
+    // RingBuffer {m_read_index, m_write_index}
+    // Multi Producer Single Consumer Ring Buffer 
+    //----------------------------------------------
     class RingBuffer : public BufferBase
     {
     public:
@@ -381,12 +384,16 @@ namespace nanolog
     private:
     	size_t const m_size;
     	Item * m_ring;
+
     	std::atomic < unsigned int > m_write_index;
         char pad[64] = { 0 };
+
     	unsigned int m_read_index;
     };
 
-
+    //--------------------------------------
+    // Buffer of Item[32768] of NanoLogLine
+    //--------------------------------------
     class Buffer
     {
     public:
@@ -445,6 +452,11 @@ namespace nanolog
 	    std::atomic < unsigned int > m_write_state[size + 1];
     };
 
+    //---------------------------------------------------
+    // QueueBuffer
+    // {m_current_write_buffer, m_current_read_buffer}
+    // {m_write_index, m_read_index}
+    //---------------------------------------------------
     class QueueBuffer : public BufferBase
     {
     public:
@@ -527,6 +539,9 @@ namespace nanolog
     	unsigned int m_read_index;
     };
 
+    //---------------------------
+    // FileWriter
+    //---------------------------
     class FileWriter
     {
     public:
@@ -575,6 +590,9 @@ namespace nanolog
 	    std::unique_ptr < std::ofstream > m_os;
     };
 
+    //---------------------------
+    // NanoLogger
+    //---------------------------
     class NanoLogger
     {
     public:
@@ -644,6 +662,7 @@ namespace nanolog
 	    std::thread m_thread;
     };
 
+    // Namespace GLOBALS
     std::unique_ptr < NanoLogger > nanologger;
     std::atomic < NanoLogger * > atomic_nanologger;
 
@@ -665,6 +684,7 @@ namespace nanolog
 	    atomic_nanologger.store(nanologger.get(), std::memory_order_seq_cst);
     }
 
+    // Namespace GLOBALS
     std::atomic < unsigned int > loglevel = {1};
 
     void set_log_level(LogLevel level)
